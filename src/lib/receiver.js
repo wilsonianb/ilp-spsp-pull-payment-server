@@ -3,7 +3,7 @@ const debug = require('debug')('ilp-spsp-invoice:receiver')
 
 const Config = require('../lib/config')
 const Webhooks = require('../lib/webhooks')
-const InvoiceModel = require('../models/invoice')
+const InvoiceModel = require('../models/token')
 
 class Receiver {
   constructor (deps) {

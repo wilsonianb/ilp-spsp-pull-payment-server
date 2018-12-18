@@ -1,7 +1,7 @@
 const fetch = require('node-fetch')
 
 const Config = require('../lib/config')
-const InvoiceModel = require('../models/invoice')
+const InvoiceModel = require('../models/token')
 
 class Webhooks {
   constructor (deps) {
