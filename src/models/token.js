@@ -47,19 +47,26 @@ class TokenModel {
   //   return paid
   // }
 
+  async pull ({ id, token }) {
+    token.balance = BigNumber(token.balance).plus(BigNumber(token.amount))
+    token.cooldown = BigNumber(token.cooldown).plus(BigNumber(token.interval).times(BigNumber(86400)))
+    this.db.put(id, JSON.stringify(token))
+  }
+
   async get (id) {
     return JSON.parse(await this.db.get(id))
   }
 
-  async create ({ amount, maximum, interval, merchant, webhook }) {
+  async create ({ amount, maximum, interval, name, webhook }) {
     const id = uuid()
 
     await this.db.put(id, JSON.stringify({
-      balance: 0,
+      balance: String(0),
       amount,
       maximum,
+      name,
       interval,
-      merchant,
+      cooldown: String(Date.now()/1000 | 0),
       webhook
     }))
 
