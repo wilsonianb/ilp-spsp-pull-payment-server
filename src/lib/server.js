@@ -26,27 +26,41 @@ class Server {
       console.log('server got connection')
 
       const id = connection.connectionTag
-      const token = await this.tokens.get(id)
 
-      const stream = connection.createStream()
-
-      if (BigNumber(token.cooldown) < BigNumber(Date.now())) {
-        if (BigNumber(token.balance).plus(token.amount) < BigNumber(token.maximum)) {
-          await stream.sendTotal(token.amount)
-          this.tokens.pull({ id, token })
-          console.log('Streaming ' + token.amount + ' units to ' + connection._sourceAccount)
-          this.webhooks.call({ id })
-            .catch(e => {
-              debug('failed to call webhook. error=', e)
-            })
-        } else {
-          await stream.write('Maximum pull amount is reached.')
-        }
+      if (!id) {
+        // push payment
+        connection.on('stream', (stream) => {
+          stream.setReceiveMax(Infinity)
+          stream.on('money', amount => {
+            console.log('Received ' + amount + ' units from ' + connection._sourceAccount)
+          })
+          stream.end()
+        })
+        connection.end()
       } else {
-        await stream.write('Cooldown period is not over.')
+        // pull payment
+        const token = await this.tokens.get(id)
+
+        const stream = connection.createStream()
+
+        if (BigNumber(token.cooldown) < BigNumber(Date.now())) {
+          if (BigNumber(token.balance).plus(token.amount) < BigNumber(token.maximum)) {
+            await stream.sendTotal(token.amount)
+            this.tokens.pull({ id, token })
+            console.log('Streaming ' + token.amount + ' units to ' + connection._sourceAccount)
+            this.webhooks.call({ id })
+              .catch(e => {
+                debug('failed to call webhook. error=', e)
+              })
+          } else {
+            await stream.write('Maximum pull amount is reached.')
+          }
+        } else {
+          await stream.write('Cooldown period is not over.')
+        }
+        await stream.end()
+        await connection.end()
       }
-      await stream.end()
-      await connection.end()
     })
   }
 
