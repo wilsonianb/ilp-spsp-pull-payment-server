@@ -1,32 +1,28 @@
 const fetch = require('node-fetch')
 
 const Config = require('../lib/config')
-const InvoiceModel = require('../models/token')
+const TokenModel = require('../models/token')
 
 class Webhooks {
   constructor (deps) {
     this.config = deps(Config)
-    this.invoices = deps(InvoiceModel)
+    this.tokens = deps(TokenModel)
   }
 
   async call (id) {
-    const invoice = await this.invoices.get(id)
+    const token = await this.tokens.get(id)
 
-    if (!invoice.webhook) {
+    if (!token.webhook) {
       return
     }
 
-    return fetch(invoice.webhook, {
+    return fetch(token.webhook, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + this.config.token
       },
-      body: JSON.stringify({
-        balance: invoice.balance,
-        amount: invoice.amount,
-        pointer: invoice.pointer()
-      })
+      body: JSON.stringify({ token, pointer: token.pointer() })
     })
   }
 }

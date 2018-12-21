@@ -8,7 +8,7 @@ const Webhooks = require('./webhooks')
 const TokenModel = require('../models/token')
 
 class Server {
-  constructor(deps) {
+  constructor (deps) {
     this.config = deps(Config)
     this.tokens = deps(TokenModel)
     this.webhooks = deps(Webhooks)
@@ -16,15 +16,13 @@ class Server {
     this.server = null
   }
 
-  async listen() {
-
+  async listen () {
     this.server = await createServer({
       plugin: this.plugin,
       serverSecret: crypto.randomBytes(32)
     })
 
     this.server.on('connection', async (connection) => {
-
       console.log('server got connection')
 
       const id = connection.connectionTag
@@ -37,10 +35,10 @@ class Server {
           await stream.sendTotal(token.amount)
           this.tokens.pull({ id, token })
           console.log('Streaming ' + token.amount + ' units to ' + connection._sourceAccount)
-          // this.webhooks.call({ id })
-          //   .catch(e => {
-          //     debug('failed to call webhook. error=', e)
-          //   })
+          this.webhooks.call({ id })
+            .catch(e => {
+              debug('failed to call webhook. error=', e)
+            })
         } else {
           await stream.write('Maximum pull amount is reached.')
         }
@@ -52,7 +50,7 @@ class Server {
     })
   }
 
-  generateAddressAndSecret(connectionTag) {
+  generateAddressAndSecret (connectionTag) {
     return this.server.generateAddressAndSecret(connectionTag)
   }
 }
