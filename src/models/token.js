@@ -66,7 +66,7 @@ class TokenModel {
       maximum,
       name,
       interval,
-      cooldown: String(Date.now()/1000 | 0),
+      cooldown: String(Date.now() / 1000 | 0),
       webhook
     }))
 

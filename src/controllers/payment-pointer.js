@@ -31,7 +31,7 @@ class PaymentPointerController {
           current: String(token.balance),
           maximum: String(token.maximum)
         },
-        receiver_info : {
+        receiver_info: {
           name: String(token.name),
           interval: String(token.interval),
           cooldown: String(token.cooldown)
