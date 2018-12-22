@@ -79,12 +79,14 @@ ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f1
 POST /
 ```
 
-Create a pull payment token.
+Requires authentication. Creates a pull payment token.
 
 #### Request
 
 - `amount` -  Amoount to be pulled each interval.
 - `maximum` - Total of pull payments that can be made.
+- `interval` - Number of days that the enpoint can not be pulled from.
+- `name` - (Optional) Name of the entity pulling from this endpoint.
 - `webhook` - (Optional) Webhook to `POST` to after the invoice is fully paid. See [Webhooks](#webhooks)
 
 #### Response
