@@ -1,11 +1,11 @@
-# ILP SPSP Invoice Server
-> SPSP server that supports invoices
+# ILP SPSP Pull Payment Server
+> SPSP server that supports pull payments
 
 - [Usage](#usage)
 - [Environment Variables](#environment-variables)
 - [API](#api)
-  - [Create an Invoice](#create-an-invoice)
-  - [Query an Invoice](#query-an-invoice)
+  - [Create a pull payment token](#create-a-pull-payment-token)
+  - [Query a pull payment token](#query-a-pull-payment-token)
   - [Webhooks](#webhooks)
 
 ## Usage
@@ -13,43 +13,51 @@
 ```sh
 SPSP_LOCALTUNNEL=true SPSP_LOCALTUNNEL_SUBDOMAIN=mysubdomain npm start
 
-# creates an invoice for 10 XRP; the sender will use a chunked payment
-http POST mysubdomain.localtunnel.me amount=10000000 reason="you bought something" \
-  Authorization:"Bearer test"
+# creates a pull payment token including the amount of each payment, the maximum that can be pulled from this endpoint, and an interval in days describing how often money can be pulled
+http POST mysubdomain.localtunnel.me amount=100 maximum=10000 interval=7 name='Amazon' Authorization:"Bearer test"
 # {
-#  "receiver": "$mysubdomain.localtunnel.me/ef6e2a39-ba3c-a5cc-0849-9730ed56d525"
+#  "token": "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7"
 # }
 
-ilp-spsp query -r "$mysubdomain.localtunnel.me/ef6e2a39-ba3c-a5cc-0849-9730ed56d525"
+ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
 # {
-#   "destinationAccount": "g.scylla.client.sharafian-lm.local.abhnViXADp0lCl7urVp18n5OLmOke57RN0ABbW2jliA.f036d74f-da5e-4b38-aca1-bd3cdd12461c.9B47_eWU76I.7tNCY0ytiCulOG4eIQSUiTxk",
-#   "sharedSecret": "CFiJIvw1rwcqYnxtWuKZ+Fq2UoR1KwMh4S4sHKVaj1U=",
+#   "destinationAccount": "private.moneyd.local.PacgxNqHIKTlZGM3aB_2YrXQydNPASI_j8LyE4BFmnc.uNiOoTJbbJrcqb2aHO9Kh51W~f8095a44-c77f-4414-a19d-7aeca03f17c7",
+#   "sharedSecret": "b88NPGVk5nubgM6zpnI/tVjRdgpUh+JvMueRFEMvPcY=",
 #   "balance": {
+#     "amount": "100",
 #     "current": "0",
-#     "maximum": "10000000"
+#     "maximum": "10000"
 #   },
 #   "receiverInfo": {
-#     "reason": "you bought something"
-#   }
-# } 
+#     "name": "Amazon",
+#     "interval": "7",
+#     "cooldown": "1546037535"
+#   },
+#   "contentType": "application/spsp4+json"
+# }
 
-ilp-spsp invoice -r "$mysubdomain.localtunnel.me/ef6e2a39-ba3c-a5cc-0849-9730ed56d525"
-# paying invoice at "$invoices.localtunnel.me/84e17e20-0391-4c00-8af7-b0d91c2aaa07"...
-# WARNING: PSK2 Chunked Payments are experimental. Money can be lost if an error occurs mid-payment or if the exchange rate changes dramatically! This should not be used for payments that are significantly larger than the path's Maximum Payment Size.
-# paid!
 
-ilp-spsp query -r "$mysubdomain.localtunnel.me/ef6e2a39-ba3c-a5cc-0849-9730ed56d525"
+# !!! For this to work, you have to run a version of ilp-spsp that supports pull payments.
+ilp-spsp pull -r '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
+# pulling from "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7"...
+
+
+ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
 # {
-#   "destinationAccount": "g.scylla.client.sharafian-lm.local.abhnViXADp0lCl7urVp18n5OLmOke57RN0ABbW2jliA.f036d74f-da5e-4b38-aca1-bd3cdd12461c.9B47_eWU76I.7tNCY0ytiCulOG4eIQSUiTxk",
-#   "sharedSecret": "CFiJIvw1rwcqYnxtWuKZ+Fq2UoR1KwMh4S4sHKVaj1U=",
+#   "destinationAccount": "private.moneyd.local.PacgxNqHIKTlZGM3aB_2YrXQydNPASI_j8LyE4BFmnc.uNiOoTJbbJrcqb2aHO9Kh51W~f8095a44-c77f-4414-a19d-7aeca03f17c7",
+#   "sharedSecret": "b88NPGVk5nubgM6zpnI/tVjRdgpUh+JvMueRFEMvPcY=",
 #   "balance": {
-#     "current": "10000000",
-#     "maximum": "10000000"
+#     "amount": "100",
+#     "current": "100",
+#     "maximum": "10000"
 #   },
 #   "receiverInfo": {
-#     "reason": "you bought something"
-#   }
-# } 
+#     "name": "Amazon",
+#     "interval": "7",
+#     "cooldown": "1546037535"
+#   },
+#   "contentType": "application/spsp4+json"
+# }
 ```
 
 ## Environment Variables
@@ -65,44 +73,49 @@ ilp-spsp query -r "$mysubdomain.localtunnel.me/ef6e2a39-ba3c-a5cc-0849-9730ed56d
 
 ## API
 
-### Create an Invoice
+### Create a pull payment token
 
 ```http
 POST /
 ```
 
-Create an invoice.
+Create a pull payment token.
 
 #### Request
 
-- `amount` - Invoice amount in base ledger units.
-- `reason` - Reason for invoice. Returned in payment pointer response.
+- `amount` -  Amoount to be pulled each interval.
+- `maximum` - Total of pull payments that can be made.
 - `webhook` - (Optional) Webhook to `POST` to after the invoice is fully paid. See [Webhooks](#webhooks)
 
 #### Response
 
-- `receiver` - Payment pointer of the SPSP receiver created for this invoice.
+- `token` - Payment pointer to be pulled from.
 
-### Query an Invoice
+### Query a pull payment token
 
 ```http
-GET /:invoice_id
+GET /:token_id 
 ```
+Needs the header `Accept:"application/spsp4+json"`.
 
-SPSP receiver endpoint for the invoice with `:invoice_id`. The payment pointer
-returned by [Create an Invoice](#create-an-invoice) resolves to this endpoint.
+SPSP endpoint for the token with `:toekn_id`. The payment pointer
+returned by [Create a pull payment token](#create-a-pull-payment-token) resolves to this endpoint.
 
 ### Webhooks
 
-When you [Create an Invoice](#create-an-invoice) and specify a webhook, it will
-call the specified webhook when the invoice is paid. The request is a `POST` with
+When you [Create a pull payment token](#create-a-pull-payment-token) and specify a webhook, it will
+call the specified webhook when the payment has been pulled. The request is a `POST` with
 
 ```http
 Authorization: Bearer <SPSP_AUTH_TOKEN>
 
 {
-  "balance": 1000000,
-  "amount": 1000000,
-  "pointer": "$localhost:6000/1b6cf71a-f465-43f2-bd69-92f66defbaf7",
+ "amount": "100",
+  "current": "0",
+  "maximum": "10000",
+  "name": "Amazon",
+  "interval": "7",
+  "cooldown": "1545436808",
+  "pointer": "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7",
 }
 ```
