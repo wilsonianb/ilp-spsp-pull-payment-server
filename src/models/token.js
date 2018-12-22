@@ -39,7 +39,7 @@ class TokenModel {
 
     return {
       id,
-      receiver: '$' + this.config.host + '/' + id
+      token: '$' + this.config.host + '/' + id
     }
   }
 }

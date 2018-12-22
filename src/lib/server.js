@@ -1,5 +1,4 @@
 const { createServer } = require('ilp-protocol-stream')
-const debug = require('debug')('ilp-spsp-invoice:receiver')
 const BigNumber = require('bignumber.js')
 const crypto = require('crypto')
 
@@ -50,7 +49,6 @@ class Server {
             console.log('Streaming ' + token.amount + ' units to ' + connection._sourceAccount)
             this.webhooks.call({ id })
               .catch(e => {
-                debug('failed to call webhook. error=', e)
               })
           } else {
             await stream.write('Maximum pull amount is reached.')
