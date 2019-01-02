@@ -58,6 +58,10 @@ ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f1
 #   },
 #   "contentType": "application/spsp4+json"
 # }
+
+ilp-spsp send -a 100 -p '$mysubdomain.localtunnel.me'
+# paying 100 to "$mysubdomain.localtunnel.me"...
+# sent!
 ```
 
 ## Environment Variables
