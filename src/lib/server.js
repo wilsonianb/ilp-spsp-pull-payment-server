@@ -33,9 +33,7 @@ class Server {
           stream.on('money', amount => {
             console.log('Received ' + amount + ' units from ' + connection._sourceAccount)
           })
-          stream.end()
         })
-        connection.end()
       } else {
         // pull payment
         const token = await this.tokens.get(id)
