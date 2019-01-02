@@ -38,7 +38,7 @@ ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f1
 
 
 # !!! For this to work, you have to run a version of ilp-spsp that supports pull payments.
-ilp-spsp pull -r '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
+ilp-spsp pull -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
 # pulling from "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7"...
 
 
