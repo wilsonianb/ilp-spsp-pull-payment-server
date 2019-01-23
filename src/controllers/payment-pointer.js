@@ -41,14 +41,20 @@ class PaymentPointerController {
         destination_account: destinationAccount,
         shared_secret: sharedSecret.toString('base64'),
         balance: {
-          amount: String(token.amount),
           current: String(token.balance),
           maximum: String(token.maximum)
         },
-        receiver_info: {
-          name: String(token.name),
-          interval: String(token.interval),
-          cooldown: String(token.cooldown)
+        timeline_info: {
+          refill_time: token.refillTime.split('.')[0] + 'Z',
+          expiry_time: token.expiryTime.split('.')[0] + 'Z'
+        },
+        frequency_info: {
+          type: token.frequency,
+          interval: token.interval
+        },
+        asset_info: {
+          asset_code: token.assetCode,
+          asset_scale: token.assetScale
         }
       }
       ctx.set('Content-Type', 'application/spsp4+json')

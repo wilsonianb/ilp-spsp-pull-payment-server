@@ -1,7 +1,7 @@
 {
-  "name": "ilp-spsp-invoice-server",
+  "name": "ilp-spsp-pull-payment-server",
   "version": "1.0.2",
-  "description": "SPSP server that supports invoices",
+  "description": "SPSP server that supports pull payments",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

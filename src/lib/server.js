@@ -1,5 +1,4 @@
 const { createServer } = require('ilp-protocol-stream')
-const BigNumber = require('bignumber.js')
 const crypto = require('crypto')
 
 const Config = require('./config')
@@ -38,22 +37,14 @@ class Server {
         // pull payment
         const token = await this.tokens.get(id)
 
-        const stream = connection.createStream()
+        const stream = await connection.createStream()
 
-        if (BigNumber(token.cooldown) < BigNumber(Date.now())) {
-          if (BigNumber(token.balance).plus(token.amount) < BigNumber(token.maximum)) {
-            await stream.sendTotal(token.amount)
-            this.tokens.pull({ id, token })
-            console.log('Streaming ' + token.amount + ' units to ' + connection._sourceAccount)
-            this.webhooks.call({ id })
-              .catch(e => {
-              })
-          } else {
-            await stream.write('Maximum pull amount is reached.')
-          }
-        } else {
-          await stream.write('Cooldown period is not over.')
-        }
+        await stream.sendTotal(token.balance)
+        this.tokens.pull({ id, token })
+        console.log('Streaming ' + token.balance + ' units to ' + connection._sourceAccount)
+        this.webhooks.call({ id })
+          .catch(e => {
+          })
         await stream.end()
         await connection.end()
       }
