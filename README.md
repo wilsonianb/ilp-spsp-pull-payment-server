@@ -14,50 +14,63 @@
 SPSP_LOCALTUNNEL=true SPSP_LOCALTUNNEL_SUBDOMAIN=mysubdomain npm start
 
 # creates a pull payment token including the amount of each payment, the maximum that can be pulled from this endpoint, and an interval in days describing how often money can be pulled
-http POST mysubdomain.localtunnel.me amount=100 maximum=10000 interval=7 name='Amazon' Authorization:"Bearer test"
+http POST mysubdomain.localtunnel.me amount=100 frequency=WEEK interval=2 cycles=52 assetCode=XRP assetScale=6 Authorization:"Bearer test"
 # {
-#  "token": "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7"
+#     "token": "$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8"
 # }
 
-ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
+ilp-spsp query -p '$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8'
 # {
-#   "destinationAccount": "private.moneyd.local.PacgxNqHIKTlZGM3aB_2YrXQydNPASI_j8LyE4BFmnc.uNiOoTJbbJrcqb2aHO9Kh51W~f8095a44-c77f-4414-a19d-7aeca03f17c7",
-#   "sharedSecret": "b88NPGVk5nubgM6zpnI/tVjRdgpUh+JvMueRFEMvPcY=",
+#   "destinationAccount": "private.moneyd.local.7sU0UU1CjjwtTljClHjuBE_je287LqcvQShNM_j6xFM.NAg8G0TwKXJ7NVvffuID3mM6~42d2e38d-e324-4adf-86eb-4efd4068fad8",
+#   "sharedSecret": "kpKd+wMzxLmgZK8+sK9slbcnIBuunSU4TELe0BNSep8=",
 #   "balance": {
-#     "amount": "100",
-#     "current": "0",
-#     "maximum": "10000"
+#     "current": "100",
+#     "maximum": "100"
 #   },
-#   "receiverInfo": {
-#     "name": "Amazon",
-#     "interval": "7",
-#     "cooldown": "1546037535"
+#   "assetInfo": {
+#     "asset_code": "XRP",
+#     "asset_scale": "6"
+#   },
+#   "frequencyInfo": {
+#     "type": "WEEK",
+#     "interval": 2
+#   },
+#   "timelineInfo": {
+#     "refill_time": "2019-02-06T00:52:55Z",
+#     "expiry_time": "2021-01-20T00:52:55Z"
 #   },
 #   "contentType": "application/spsp4+json"
 # }
 
 
 # !!! For this to work, you have to run a version of ilp-spsp that supports pull payments.
-ilp-spsp pull -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
-# pulling from "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7"...
+ilp-spsp pull -p '$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8'
+# pulling from "$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8"...
+# pulled 100 units!
 
-
-ilp-spsp query -p '$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7'
+ilp-spsp query -p '$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8'
 # {
-#   "destinationAccount": "private.moneyd.local.PacgxNqHIKTlZGM3aB_2YrXQydNPASI_j8LyE4BFmnc.uNiOoTJbbJrcqb2aHO9Kh51W~f8095a44-c77f-4414-a19d-7aeca03f17c7",
-#   "sharedSecret": "b88NPGVk5nubgM6zpnI/tVjRdgpUh+JvMueRFEMvPcY=",
+#   "destinationAccount": "private.moneyd.local.7sU0UU1CjjwtTljClHjuBE_je287LqcvQShNM_j6xFM.ju-1yyu7MYas0yQB3Mtr2ISe~42d2e38d-e324-4adf-86eb-4efd4068fad8",
+#   "sharedSecret": "LwYhK9Mg96udCTYdGbvmfCBOVnDdCdLhmmuVfo4qnHg=",
 #   "balance": {
-#     "amount": "100",
-#     "current": "100",
-#     "maximum": "10000"
+#     "current": "0",
+#     "maximum": "100"
 #   },
-#   "receiverInfo": {
-#     "name": "Amazon",
-#     "interval": "7",
-#     "cooldown": "1546037535"
+#   "assetInfo": {
+#     "asset_code": "XRP",
+#     "asset_scale": "6"
+#   },
+#   "frequencyInfo": {
+#     "type": "WEEK",
+#     "interval": 2
+#   },
+#   "timelineInfo": {
+#     "refill_time": "2019-02-06T00:52:55Z",
+#     "expiry_time": "2021-01-20T00:52:55Z"
 #   },
 #   "contentType": "application/spsp4+json"
 # }
+
 
 ilp-spsp send -a 100 -p '$mysubdomain.localtunnel.me'
 # paying 100 to "$mysubdomain.localtunnel.me"...
@@ -87,11 +100,13 @@ Requires authentication. Creates a pull payment token.
 
 #### Request
 
-- `amount` -  Amoount to be pulled each interval.
-- `maximum` - Total of pull payments that can be made.
-- `interval` - Number of days that the enpoint can not be pulled from.
-- `name` - (Optional) Name of the entity pulling from this endpoint.
-- `webhook` - (Optional) Webhook to `POST` to after the invoice is fully paid. See [Webhooks](#webhooks)
+- `amount` -  Amount to be pulled each interval.
+- `frequency` - Frequency in which the pull amount `balance.maximum` is refilled. Possible values are `DAY`, `WEEK`, `MONTH`, `YEAR`.
+- `interval` - Interval correponding to the `frequency`. If `interval` equal to `2` and `frequency` equal to `WEEK`, `balance.maximum` is refilled every 2 weeks.
+- `cycle` - Number of times `timing_info.refill_time` is decreased by `interval` + `frequency`. It defines `timing_info.expiry_time`.
+- `assetCode` - Asset the pull payment is made in.
+- `assetScale` - Scale the asset is measured in. If `amount` equal to `1000`, `assetCode` equal to `USD` and `assetScale` equal to `2`, amount denotes 10.00 USD.
+- `webhook` - (Optional) Webhook to `POST` to after the endpoint has been pulled from. See [Webhooks](#webhooks)
 
 #### Response
 
@@ -104,7 +119,7 @@ GET /:token_id
 ```
 Needs the header `Accept:"application/spsp4+json"`.
 
-SPSP endpoint for the token with `:toekn_id`. The payment pointer
+SPSP endpoint storing the information of the pull payment agreement corresponding to the token with `:token_id`. The payment pointer
 returned by [Create a pull payment token](#create-a-pull-payment-token) resolves to this endpoint.
 
 ### Webhooks
@@ -116,12 +131,15 @@ call the specified webhook when the payment has been pulled. The request is a `P
 Authorization: Bearer <SPSP_AUTH_TOKEN>
 
 {
- "amount": "100",
-  "current": "0",
-  "maximum": "10000",
-  "name": "Amazon",
-  "interval": "7",
-  "cooldown": "1545436808",
-  "pointer": "$mysubdomain.localtunnel.me/f8095a44-c77f-4414-a19d-7aeca03f17c7",
+  "balance": "0",
+  "maximum": "100",
+  "refill_time": "2019-02-06T00:52:55Z",
+  "expiry_time": "2021-01-20T00:52:55Z",
+  "frequency": "WEEK",
+  "interval": 2,
+  "asset_code": "XRP",
+  "asset_scale": 6,
+  "webhook": "http://example.com/webhook",
+  "pointer": "$mysubdomain.localtunnel.me/42d2e38d-e324-4adf-86eb-4efd4068fad8",
 }
 ```
