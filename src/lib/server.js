@@ -37,16 +37,16 @@ class Server {
         // pull payment
         const token = await this.tokens.get(id)
 
-        const stream = await connection.createStream()
-
-        await stream.sendTotal(token.balance)
-        this.tokens.pull({ id, token })
-        console.log('Streaming ' + token.balance + ' units to ' + connection._sourceAccount)
-        this.webhooks.call({ id })
-          .catch(e => {
-          })
-        await stream.end()
-        await connection.end()
+        connection.on('stream', async (stream) => {
+          await stream.sendTotal(token.balance)
+          console.log('Streaming ' + token.balance + ' units to ' + connection._sourceAccount)
+          this.tokens.pull({ id, token })
+          this.webhooks.call({ id })
+            .catch(e => {
+            })
+          await stream.end()
+          await connection.end()
+        })
       }
     })
   }
