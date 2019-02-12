@@ -9,20 +9,24 @@ class Webhooks {
     this.tokens = deps(TokenModel)
   }
 
-  async call (id) {
-    const token = await this.tokens.get(id)
+  async call (token) {
+    const tokenInfo = await this.tokens.get(token)
 
-    if (!token.webhook) {
+    if (!tokenInfo.webhook) {
       return
     }
 
-    return fetch(token.webhook, {
+    return fetch(tokenInfo.webhook, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + this.config.token
       },
-      body: JSON.stringify({ token, pointer: token.pointer() })
+      body: JSON.stringify({
+        balanceTotal: tokenInfo.balanceTotal,
+        balanceInterval: tokenInfo.balanceTotal,
+        pointer: '$' + this.config.host + '/' + token
+      })
     })
   }
 }

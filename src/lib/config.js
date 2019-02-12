@@ -8,6 +8,7 @@ class Config {
     this.plugin = IlpPlugin()
     this.dbPath = process.env.SPSP_DB_PATH
     this.token = process.env.SPSP_AUTH_TOKEN || 'test'
+    this.jwtSecret = process.env.SPSP_JWT_SECRET || 'test'
     this.host = process.env.SPSP_HOST || (this.localtunnel
       ? this.subdomain + '.localtunnel.me'
       : 'localhost:' + this.port)
