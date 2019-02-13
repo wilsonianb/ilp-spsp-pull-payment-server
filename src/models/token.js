@@ -16,10 +16,10 @@ class TokenModel {
       : memdown())
   }
 
-  async pull ({ token, pullable }) {
+  async pull ({ token, amount }) {
     let tokenInfo = await this.get(token)
-    tokenInfo.balanceTotal = new BigNumber(tokenInfo.balanceTotal).plus(pullable)
-    tokenInfo.balanceInterval = new BigNumber(tokenInfo.balanceInterval).plus(pullable)
+    tokenInfo.balanceTotal = new BigNumber(tokenInfo.balanceTotal).plus(amount)
+    tokenInfo.balanceInterval = new BigNumber(tokenInfo.balanceInterval).plus(amount)
     this.db.put(token, JSON.stringify(tokenInfo))
   }
 

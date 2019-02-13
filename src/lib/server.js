@@ -40,12 +40,15 @@ class Server {
 
         connection.on('stream', async (stream) => {
           const pullable = availableFunds(tokenInfo)
-          await stream.sendTotal(pullable)
-          console.log('Streaming ' + pullable + ' units to ' + connection._sourceAccount)
-          this.tokens.pull({ token, pullable })
-          this.webhooks.call({ token })
-            .catch(e => {
-            })
+          stream.setSendMax(pullable)
+
+          await stream.on('outgoing_money', amount => {
+            console.log('Streamed ' + amount + ' units to ' + connection._sourceAccount)
+            this.tokens.pull({ token, amount })
+            this.webhooks.call({ token })
+              .catch(e => {
+              })
+          })
           await stream.end()
           await connection.end()
         })
