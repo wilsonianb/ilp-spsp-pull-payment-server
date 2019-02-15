@@ -3,13 +3,15 @@ const crypto = require('crypto')
 const BigNumber = require('bignumber.js')
 
 const Config = require('./config')
-const Webhooks = require('./webhooks')
 const TokenModel = require('../models/token')
+const Exchange = require('./exchange')
+const Webhooks = require('./webhooks')
 
 class Server {
   constructor (deps) {
     this.config = deps(Config)
     this.tokens = deps(TokenModel)
+    this.exchange = deps(Exchange)
     this.webhooks = deps(Webhooks)
     this.plugin = this.config.plugin
     this.server = null
@@ -39,16 +41,20 @@ class Server {
         const tokenInfo = await this.tokens.get(token)
 
         connection.on('stream', async (stream) => {
-          const pullable = availableFunds(tokenInfo)
-          stream.setSendMax(pullable)
+          const exchangeRate = await this.exchange.fetchRate(tokenInfo.assetCode, tokenInfo.assetScale, this.server.serverAssetCode, this.server.serverAssetScale)
+          if (exchangeRate) {
+            const pullable = Math.floor(availableFunds(tokenInfo) * exchangeRate)
+            stream.setSendMax(pullable)
 
-          await stream.on('outgoing_money', amount => {
-            console.log('Streamed ' + amount + ' units to ' + connection._sourceAccount)
-            this.tokens.pull({ token, amount })
-            this.webhooks.call({ token })
-              .catch(e => {
-              })
-          })
+            await stream.on('outgoing_money', pulled => {
+              console.log('Streamed ' + pulled + ' units to ' + connection._sourceAccount)
+              const amount = Math.ceil(pulled / exchangeRate)
+              this.tokens.pull({ token, amount })
+              this.webhooks.call({ token })
+                .catch(e => {
+                })
+            })
+          }
           await stream.end()
           await connection.end()
         })

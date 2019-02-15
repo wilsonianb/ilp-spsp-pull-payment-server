@@ -16,6 +16,7 @@
     "crypto": "^1.0.1",
     "get-port": "^3.2.0",
     "ilp-plugin": "^3.2.1",
+    "ilp-price": "^1.0.1",
     "ilp-protocol-psk2": "^0.2.1",
     "ilp-protocol-stream": "^1.8.9",
     "jsonwebtoken": "^8.4.0",

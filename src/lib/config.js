@@ -12,6 +12,7 @@ class Config {
     this.host = process.env.SPSP_HOST || (this.localtunnel
       ? this.subdomain + '.localtunnel.me'
       : 'localhost:' + this.port)
+    this.exchange = process.env.SPSP_EXCHANGE || 'ilpprice'
 
     if (this.localtunnel && !this.subdomain) {
       throw new Error('subdomain must be specified if localtunnel is used')
