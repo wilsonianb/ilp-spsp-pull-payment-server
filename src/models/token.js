@@ -3,6 +3,7 @@ const leveldown = require('leveldown')
 const memdown = require('memdown')
 const BigNumber = require('bignumber.js')
 const moment = require('moment')
+const uuid = require('uuid')
 
 const Config = require('../lib/config')
 const JWT = require('../lib/jwt')
@@ -36,17 +37,7 @@ class TokenModel {
 
   async create ({ token, amount, start, interval, cycles, cap, assetCode, assetScale, webhook }) {
     if (!token) {
-      let payload = {
-        amount,
-        start: start || moment().toISOString(),
-        interval,
-        cycles,
-        cap,
-        assetCode,
-        assetScale,
-        webhook
-      }
-      token = this.jwt.create({ payload })
+      token = uuid()
     }
     await this.db.put(token, JSON.stringify({
       balanceTotal: String(0),
