@@ -9,6 +9,10 @@ class Exchange {
   }
 
   async fetchRate (tokenAssetCode, tokenAssetScale, serverAssetCode, serverAssetScale) {
+    if (tokenAssetCode === serverAssetCode) {
+      return Math.pow(10, serverAssetScale - tokenAssetScale)
+    }
+
     const apis = this.sortedApiList()
     let rate
     let scaledRate
