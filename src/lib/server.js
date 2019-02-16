@@ -1,14 +1,17 @@
 const { createServer } = require('ilp-protocol-stream')
 const crypto = require('crypto')
+const BigNumber = require('bignumber.js')
 
 const Config = require('./config')
-const Webhooks = require('./webhooks')
 const TokenModel = require('../models/token')
+const Exchange = require('./exchange')
+const Webhooks = require('./webhooks')
 
 class Server {
   constructor (deps) {
     this.config = deps(Config)
     this.tokens = deps(TokenModel)
+    this.exchange = deps(Exchange)
     this.webhooks = deps(Webhooks)
     this.plugin = this.config.plugin
     this.server = null
@@ -23,9 +26,9 @@ class Server {
     this.server.on('connection', async (connection) => {
       console.log('server got connection')
 
-      const id = connection.connectionTag
+      const token = connection.connectionTag.split('~').join('.')
 
-      if (!id) {
+      if (!token) {
         // push payment
         connection.on('stream', (stream) => {
           stream.setReceiveMax(Infinity)
@@ -35,15 +38,23 @@ class Server {
         })
       } else {
         // pull payment
-        const token = await this.tokens.get(id)
+        const tokenInfo = await this.tokens.get(token)
 
         connection.on('stream', async (stream) => {
-          await stream.sendTotal(token.balance)
-          console.log('Streaming ' + token.balance + ' units to ' + connection._sourceAccount)
-          this.tokens.pull({ id, token })
-          this.webhooks.call({ id })
-            .catch(e => {
+          const exchangeRate = await this.exchange.fetchRate(tokenInfo.assetCode, tokenInfo.assetScale, this.server.serverAssetCode, this.server.serverAssetScale)
+          if (exchangeRate) {
+            const pullable = Math.floor(availableFunds(tokenInfo) * exchangeRate)
+            stream.setSendMax(pullable)
+
+            await stream.on('outgoing_money', pulled => {
+              console.log('Streamed ' + pulled + ' units to ' + connection._sourceAccount)
+              const amount = Math.ceil(pulled / exchangeRate)
+              this.tokens.pull({ token, amount })
+              this.webhooks.call({ token })
+                .catch(e => {
+                })
             })
+          }
           await stream.end()
           await connection.end()
         })
@@ -53,6 +64,18 @@ class Server {
 
   generateAddressAndSecret (connectionTag) {
     return this.server.generateAddressAndSecret(connectionTag)
+  }
+}
+
+function availableFunds (tokenInfo) {
+  if (tokenInfo.cap) {
+    if (tokenInfo.cycleCurrent <= tokenInfo.cycles) {
+      return new BigNumber(tokenInfo.amount).minus(tokenInfo.balanceInterval)
+    } else {
+      return 0
+    }
+  } else {
+    return new BigNumber(tokenInfo.amount).multipliedBy(BigNumber.minimum(tokenInfo.cycleCurrent, tokenInfo.cycles)).minus(tokenInfo.balanceTotal)
   }
 }
 

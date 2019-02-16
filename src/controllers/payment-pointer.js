@@ -24,37 +24,25 @@ class PaymentPointerController {
       ctx.set('Content-Type', 'application/spsp4+json')
     })
 
-    router.get('/:token_id', async ctx => {
+    router.get('/:token', async ctx => {
       if (ctx.get('Accept').indexOf('application/spsp4+json') === -1) {
         return ctx.throw(404)
       }
 
-      const token = await this.tokens.get(ctx.params.token_id)
+      const token = await this.tokens.get(ctx.params.token)
       if (!token) {
         return ctx.throw(404, 'Token not found')
       }
 
       const { destinationAccount, sharedSecret } =
-        this.server.generateAddressAndSecret(ctx.params.token_id)
+        this.server.generateAddressAndSecret(ctx.params.token.split('.').join('~'))
 
       ctx.body = {
         destination_account: destinationAccount,
         shared_secret: sharedSecret.toString('base64'),
         balance: {
-          current: String(token.balance),
-          maximum: String(token.maximum)
-        },
-        timeline_info: {
-          refill_time: token.refillTime.split('.')[0] + 'Z',
-          expiry_time: token.expiryTime.split('.')[0] + 'Z'
-        },
-        frequency_info: {
-          type: token.frequency,
-          interval: token.interval
-        },
-        asset_info: {
-          asset_code: token.assetCode,
-          asset_scale: token.assetScale
+          interval: String(token.balanceInterval),
+          total: String(token.balanceTotal)
         }
       }
       ctx.set('Content-Type', 'application/spsp4+json')
