@@ -25,9 +25,9 @@ class Server {
     this.server.on('connection', async (connection) => {
       console.log('server got connection')
 
-      const token = connection.connectionTag.split('~').join('.')
+      const tag = connection.connectionTag
 
-      if (!token) {
+      if (!tag) {
         // push payment
         connection.on('stream', (stream) => {
           stream.setReceiveMax(Infinity)
@@ -37,6 +37,7 @@ class Server {
         })
       } else {
         // pull payment
+        const token = tag.split('~').join('.')
         const tokenInfo = await this.tokens.get(token)
 
         connection.on('stream', async (stream) => {
