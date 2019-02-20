@@ -41,8 +41,9 @@ class PaymentPointerController {
         destination_account: destinationAccount,
         shared_secret: sharedSecret.toString('base64'),
         balance: {
+          total: String(token.balanceTotal),
           interval: String(token.balanceInterval),
-          total: String(token.balanceTotal)
+          available: String(token.balanceAvailable)
         }
       }
       ctx.set('Content-Type', 'application/spsp4+json')

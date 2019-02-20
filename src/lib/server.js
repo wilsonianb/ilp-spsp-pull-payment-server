@@ -1,6 +1,5 @@
 const { createServer } = require('ilp-protocol-stream')
 const crypto = require('crypto')
-const BigNumber = require('bignumber.js')
 
 const Config = require('./config')
 const TokenModel = require('../models/token')
@@ -43,7 +42,7 @@ class Server {
         connection.on('stream', async (stream) => {
           const exchangeRate = await this.exchange.fetchRate(tokenInfo.assetCode, tokenInfo.assetScale, this.server.serverAssetCode, this.server.serverAssetScale)
           if (exchangeRate) {
-            const pullable = Math.floor(availableFunds(tokenInfo) * exchangeRate)
+            const pullable = Math.floor(tokenInfo.balanceAvailable * exchangeRate)
             stream.setSendMax(pullable)
 
             await stream.on('outgoing_money', pulled => {
@@ -64,18 +63,6 @@ class Server {
 
   generateAddressAndSecret (connectionTag) {
     return this.server.generateAddressAndSecret(connectionTag)
-  }
-}
-
-function availableFunds (tokenInfo) {
-  if (tokenInfo.cap) {
-    if (tokenInfo.cycleCurrent <= tokenInfo.cycles) {
-      return new BigNumber(tokenInfo.amount).minus(tokenInfo.balanceInterval)
-    } else {
-      return 0
-    }
-  } else {
-    return new BigNumber(tokenInfo.amount).multipliedBy(BigNumber.minimum(tokenInfo.cycleCurrent, tokenInfo.cycles)).minus(tokenInfo.balanceTotal)
   }
 }
 

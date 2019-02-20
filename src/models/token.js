@@ -31,6 +31,7 @@ class TokenModel {
       tokenInfo.cycleCurrent = currentCycle
       tokenInfo.balanceInterval = String(0)
     }
+    tokenInfo.balanceAvailable = availableFunds(tokenInfo)
     await this.db.put(token, JSON.stringify(tokenInfo))
     return tokenInfo
   }
@@ -42,6 +43,7 @@ class TokenModel {
     await this.db.put(token, JSON.stringify({
       balanceTotal: String(0),
       balanceInterval: String(0),
+      balanceAvailable: String(0),
       amount,
       start: start || moment().toISOString(),
       interval,
@@ -61,3 +63,15 @@ class TokenModel {
 }
 
 module.exports = TokenModel
+
+function availableFunds (tokenInfo) {
+  if (tokenInfo.cap) {
+    if (tokenInfo.cycleCurrent <= tokenInfo.cycles) {
+      return new BigNumber(tokenInfo.amount).minus(tokenInfo.balanceInterval)
+    } else {
+      return 0
+    }
+  } else {
+    return new BigNumber(tokenInfo.amount).multipliedBy(BigNumber.minimum(tokenInfo.cycleCurrent, tokenInfo.cycles)).minus(tokenInfo.balanceTotal)
+  }
+}
