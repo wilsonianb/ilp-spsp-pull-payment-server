@@ -1,17 +1,16 @@
 const levelup = require('levelup')
 const leveldown = require('leveldown')
 const memdown = require('memdown')
-const BigNumber = require('bignumber.js')
 const moment = require('moment')
 const uuid = require('uuid')
 
 const Config = require('../lib/config')
-const JWT = require('../lib/jwt')
+const TokenInfo = require('../lib/token')
 
 class TokenModel {
   constructor (deps) {
     this.config = deps(Config)
-    this.jwt = deps(JWT)
+    this.tokenInfo = deps(TokenInfo)
     this.db = levelup(this.config.dbPath
       ? leveldown(this.config.dbPath)
       : memdown())
@@ -19,20 +18,14 @@ class TokenModel {
 
   async pull ({ token, amount }) {
     let tokenInfo = await this.get(token)
-    tokenInfo.balanceTotal = new BigNumber(tokenInfo.balanceTotal).plus(amount)
-    tokenInfo.balanceInterval = new BigNumber(tokenInfo.balanceInterval).plus(amount)
+    tokenInfo = tokenInfo.pull(tokenInfo, amount)
     this.db.put(token, JSON.stringify(tokenInfo))
   }
 
   async get (token) {
     let tokenInfo = JSON.parse(await this.db.get(token))
-    const currentCycle = Math.ceil((moment(moment().toISOString()) - moment(tokenInfo.start)) / moment.duration(tokenInfo.interval))
-    if (tokenInfo.cycleCurrent < currentCycle) {
-      tokenInfo.cycleCurrent = currentCycle
-      tokenInfo.balanceInterval = String(0)
-    }
-    tokenInfo.balanceAvailable = availableFunds(tokenInfo)
-    await this.db.put(token, JSON.stringify(tokenInfo))
+    tokenInfo = tokenInfo.get(tokenInfo)
+    this.db.put(token, JSON.stringify(tokenInfo))
     return tokenInfo
   }
 
@@ -47,7 +40,7 @@ class TokenModel {
       amount,
       start: start || moment().toISOString(),
       interval,
-      cycles,
+      cycles: Number(cycles),
       cycleCurrent: 1,
       cap: cap === 'true',
       assetCode,
@@ -60,18 +53,13 @@ class TokenModel {
       pointer: '$' + this.config.host + '/' + token
     }
   }
+
+  async update (token, values) {
+    let tokenInfo = await this.get(token)
+    tokenInfo = await tokenInfo.update(tokenInfo, values)
+    this.db.put(token, JSON.stringify(tokenInfo))
+    return tokenInfo
+  }
 }
 
 module.exports = TokenModel
-
-function availableFunds (tokenInfo) {
-  if (tokenInfo.cap) {
-    if (tokenInfo.cycleCurrent <= tokenInfo.cycles) {
-      return new BigNumber(tokenInfo.amount).minus(tokenInfo.balanceInterval)
-    } else {
-      return 0
-    }
-  } else {
-    return new BigNumber(tokenInfo.amount).multipliedBy(BigNumber.minimum(tokenInfo.cycleCurrent, tokenInfo.cycles)).minus(tokenInfo.balanceTotal)
-  }
-}

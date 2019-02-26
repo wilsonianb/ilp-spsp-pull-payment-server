@@ -29,6 +29,12 @@ class TokenController {
         ctx.throw(401, 'Unauthorized: Token could not be verified.')
       }
     })
+
+    router.post('/update/:token', this.auth.getMiddleware(), async ctx => {
+      debug('updating pull token')
+      const updatedInfo = await this.tokens.update(ctx.params.token, ctx.request.body)
+      ctx.body = updatedInfo
+    })
   }
 }
 
