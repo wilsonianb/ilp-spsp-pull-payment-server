@@ -5,12 +5,12 @@ const moment = require('moment')
 const uuid = require('uuid')
 
 const Config = require('../lib/config')
-const TokenInfo = require('../lib/token')
+const Token = require('../lib/token')
 
 class TokenModel {
   constructor (deps) {
     this.config = deps(Config)
-    this.tokenInfo = deps(TokenInfo)
+    this.token = deps(Token)
     this.db = levelup(this.config.dbPath
       ? leveldown(this.config.dbPath)
       : memdown())
@@ -18,13 +18,13 @@ class TokenModel {
 
   async pull ({ token, amount }) {
     let tokenInfo = await this.get(token)
-    tokenInfo = tokenInfo.pull(tokenInfo, amount)
+    tokenInfo = this.token.pull(tokenInfo, amount)
     this.db.put(token, JSON.stringify(tokenInfo))
   }
 
   async get (token) {
     let tokenInfo = JSON.parse(await this.db.get(token))
-    tokenInfo = tokenInfo.get(tokenInfo)
+    tokenInfo = this.token.get(tokenInfo)
     this.db.put(token, JSON.stringify(tokenInfo))
     return tokenInfo
   }
@@ -56,7 +56,7 @@ class TokenModel {
 
   async update (token, values) {
     let tokenInfo = await this.get(token)
-    tokenInfo = await tokenInfo.update(tokenInfo, values)
+    tokenInfo = await this.token.update(tokenInfo, values)
     this.db.put(token, JSON.stringify(tokenInfo))
     return tokenInfo
   }

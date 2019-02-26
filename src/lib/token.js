@@ -3,7 +3,7 @@ const moment = require('moment')
 
 const Exchange = require('./exchange')
 
-class TokenInfo {
+class Token {
   constructor (deps) {
     this.exchange = deps(Exchange)
   }
@@ -79,4 +79,4 @@ class TokenInfo {
   }
 }
 
-module.exports = TokenInfo
+module.exports = Token

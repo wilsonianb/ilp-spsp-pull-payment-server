@@ -6,7 +6,7 @@ const Token = require('../src/lib/token')
 const Exchange = require('../src/lib/exchange')
 
 var deps
-var tokenInfo
+var token
 var input
 var start
 var expectedOutput
@@ -17,11 +17,11 @@ class MockExchange {
   }
 }
 
-describe('TokenInfo', function () {
+describe('Token', function () {
   beforeEach(function () {
     deps = reduct()
     deps.setOverride(Exchange, MockExchange)
-    tokenInfo = deps(Token)
+    token = deps(Token)
     start = moment(moment() - moment.duration('P0Y0M0DT0H4M30S')).toISOString()
   })
   describe('.pull()', function () {
@@ -53,7 +53,7 @@ describe('TokenInfo', function () {
         interval: 'P0Y0M0DT0H1M',
         start: '2019-02-21T22:57:03.893Z'
       }
-      assert(JSON.stringify(tokenInfo.pull(input, amount)) === JSON.stringify(expectedOutput), 'did not update info correctly')
+      assert(JSON.stringify(token.pull(input, amount)) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
   })
   describe('.get()', function () {
@@ -89,7 +89,7 @@ describe('TokenInfo', function () {
       expectedOutput.balanceAvailable = '80000'
       expectedOutput.balanceInterval = '0'
 
-      let output = tokenInfo.get(input)
+      let output = token.get(input)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the current cycle and balances on get, cap=true', function () {
@@ -98,7 +98,7 @@ describe('TokenInfo', function () {
       expectedOutput.balanceInterval = '0'
       expectedOutput.cap = true
 
-      let output = tokenInfo.get(input)
+      let output = token.get(input)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the current cycle and balances on get, cap=false, after cycle reset', function () {
@@ -113,7 +113,7 @@ describe('TokenInfo', function () {
       expectedOutput.start = localStart
       expectedOutput.cycleCurrent = 2
 
-      let output = tokenInfo.get(input)
+      let output = token.get(input)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
   })
@@ -158,7 +158,7 @@ describe('TokenInfo', function () {
       expectedOutput.balanceInterval = '40000'
       expectedOutput.balanceTotal = '160000'
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should not let you update just the asset code', async function () {
@@ -166,7 +166,7 @@ describe('TokenInfo', function () {
         assetCode: 'EUR'
       }
       expectedOutput = { 'Error': 'Asset code and scale can only be updated together.' }
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the amount', async function () {
@@ -180,7 +180,7 @@ describe('TokenInfo', function () {
       expectedOutput.cycles = 6
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the interval', async function () {
@@ -193,7 +193,7 @@ describe('TokenInfo', function () {
       expectedOutput.interval = 'P0Y0M0DT0H2M'
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the cap', async function () {
@@ -206,7 +206,7 @@ describe('TokenInfo', function () {
       expectedOutput.cycles = 6
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update the cycles', async function () {
@@ -215,7 +215,7 @@ describe('TokenInfo', function () {
       }
       expectedOutput.cycles = 30
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update assetCode, assetScale, and amount', async function () {
@@ -234,7 +234,7 @@ describe('TokenInfo', function () {
       expectedOutput.cycles = 6
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update assetCode, assetScale, and amount with little leftover', async function () {
@@ -256,7 +256,7 @@ describe('TokenInfo', function () {
       expectedOutput.cycles = 6
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
     it('should update assetCode, assetScale, and amount with high leftover', async function () {
@@ -278,7 +278,7 @@ describe('TokenInfo', function () {
       expectedOutput.cycles = 6
       expectedOutput.start = moment(moment(start) + moment.duration('P0Y0M0DT0H4M')).toISOString()
 
-      let output = await tokenInfo.update(input, values)
+      let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
   })
