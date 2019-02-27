@@ -16,6 +16,17 @@ class Server {
     this.server = null
   }
 
+  start () {
+    this.listen()
+    this.monitorToken()
+  }
+
+  async monitorToken () {
+    const expired = this.tokens.getExpired()
+    await this.tokens.deleteMultiple(expired)
+    setTimeout(this.monitorToken.bind(this), 1000)
+  }
+
   async listen () {
     this.server = await createServer({
       plugin: this.plugin,

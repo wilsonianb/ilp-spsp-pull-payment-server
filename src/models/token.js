@@ -14,6 +14,7 @@ class TokenModel {
     this.db = levelup(this.config.dbPath
       ? leveldown(this.config.dbPath)
       : memdown())
+    this.expiryCache = new Map()
   }
 
   async pull ({ token, amount }) {
@@ -29,16 +30,41 @@ class TokenModel {
     return tokenInfo
   }
 
-  async create ({ token, amount, start, interval, cycles, cap, assetCode, assetScale, webhook }) {
+  getExpired () {
+    const now = new Date()
+    return Array.from(this.expiryCache.values())
+      .filter(p => {
+        return now > new Date(p.expiry)
+      })
+      .map(p => p.id)
+  }
+
+  async deleteMultiple (tokens) {
+    await tokens.map(async token => this.delete(token))
+  }
+
+  async delete (token) {
+    this.expiryCache.delete(token)
+    await this.db.del(token)
+  }
+
+  async create ({ token, amount, start, expiry, interval, cycles, cap, assetCode, assetScale, webhook }) {
     if (!token) {
       token = uuid()
     }
+    let expiryISO
+    if (expiry) {
+      expiryISO = moment(expiry).toISOString()
+      this.expiryCache.set(token, { id: token, expiry: expiryISO })
+    }
+
     await this.db.put(token, JSON.stringify({
       balanceTotal: String(0),
       balanceInterval: String(0),
       balanceAvailable: String(0),
       amount,
-      start: start || moment().toISOString(),
+      start: (moment(start) || moment()).toISOString(),
+      expiry: expiryISO,
       interval,
       cycles: Number(cycles),
       cycleCurrent: 1,
@@ -57,6 +83,7 @@ class TokenModel {
   async update (token, values) {
     let tokenInfo = await this.get(token)
     tokenInfo = await this.token.update(tokenInfo, values)
+    this.expiryCache.set(token, { id: token, expiry: tokenInfo.expiry })
     this.db.put(token, JSON.stringify(tokenInfo))
     return tokenInfo
   }

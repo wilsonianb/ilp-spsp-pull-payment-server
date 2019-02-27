@@ -218,6 +218,16 @@ describe('Token', function () {
       let output = await token.update(input, values)
       assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
     })
+    it('should update the expiry time', async function () {
+      let expiry = moment(moment() + moment.duration('P0Y0M0DT0H20M')).toISOString()
+      let values = {
+        expiry: expiry
+      }
+      expectedOutput.expiry = expiry
+
+      let output = await token.update(input, values)
+      assert(JSON.stringify(output) === JSON.stringify(expectedOutput), 'did not update info correctly')
+    })
     it('should update assetCode, assetScale, and amount', async function () {
       let values = {
         assetCode: 'EUR',

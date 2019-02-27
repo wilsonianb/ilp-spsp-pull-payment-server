@@ -12,8 +12,8 @@ class TokenController {
   async init (router) {
     router.post('/', this.auth.getMiddleware(), async ctx => {
       debug('creating pull token')
-      const { amount, start, interval, cycles, cap, assetCode, assetScale, webhook } = ctx.request.body
-      const { pointer } = await this.tokens.create({ amount, start, interval, cycles, cap, assetCode, assetScale, webhook })
+      const { amount, start, expiry, interval, cycles, cap, assetCode, assetScale, webhook } = ctx.request.body
+      const { pointer } = await this.tokens.create({ amount, start, expiry, interval, cycles, cap, assetCode, assetScale, webhook })
       ctx.body = { pointer }
     })
 

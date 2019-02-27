@@ -63,6 +63,9 @@ class Token {
     if (values.cycles) {
       tokenInfo.cycles = Number(values.cycles)
     }
+    if (values.expiry) {
+      tokenInfo.expiry = moment(values.expiry).toISOString()
+    }
     return tokenInfo
   }
 

@@ -8,7 +8,7 @@ class PaymentPointerController {
   }
 
   async init (router) {
-    await this.server.listen()
+    await this.server.start()
 
     router.get('/.well-known/pay', async ctx => {
       if (ctx.get('Accept').indexOf('application/spsp4+json') === -1) {
