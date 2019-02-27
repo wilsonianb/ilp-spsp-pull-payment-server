@@ -101,6 +101,7 @@ Requires authentication. Creates a pull payment token.
 
 - `amount` -  Amount available each interval.
 - `start` - _(Optional)_ [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) UTC timestamp
+- `expiry` - _(Optional)_ [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) UTC timestamp
 - `interval` - [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) duration
 - `cycles` - Number of repititions of the interval; defines the expiry of the endpoint.
 - `cap` - If `true`, maximum pullable amount per interval is `amount` (_use it or loose it_); if `false`, maximum pullable amount per interval is the accumulation of funds that have not been pulled.
