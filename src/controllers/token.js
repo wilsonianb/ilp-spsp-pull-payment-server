@@ -1,7 +1,7 @@
 const TokenModel = require('../models/token')
 const Auth = require('../lib/auth')
 const JWT = require('../lib/jwt')
-const debug = require('debug')('ilp-spsp-pull-payment:token')
+const debug = require('debug')('ilp-spsp-pull:token-controller')
 class TokenController {
   constructor (deps) {
     this.tokens = deps(TokenModel)

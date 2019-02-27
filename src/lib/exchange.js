@@ -2,6 +2,7 @@ const fetch = require('node-fetch')
 const Price = require('ilp-price')
 
 const Config = require('./config')
+const debug = require('debug')('ilp-spsp-pull:exchange')
 
 class Exchange {
   constructor (deps) {
@@ -18,7 +19,7 @@ class Exchange {
     let scaledRate
 
     for (let api in apis) {
-      console.log(`Trying to convert using ${String(apis[api].name)}...`)
+      debug(`Trying to convert using ${String(apis[api].name)}...`)
       rate = await apis[api](tokenAssetCode, serverAssetCode)
       if (rate) {
         scaledRate = rate * Math.pow(10, serverAssetScale - tokenAssetScale)

@@ -6,6 +6,7 @@ const uuid = require('uuid')
 
 const Config = require('../lib/config')
 const Token = require('../lib/token')
+const debug = require('debug')('ilp-spsp-pull:token-model')
 
 class TokenModel {
   constructor (deps) {
@@ -21,12 +22,14 @@ class TokenModel {
     let tokenInfo = await this.get(token)
     tokenInfo = this.token.pull(tokenInfo, amount)
     this.db.put(token, JSON.stringify(tokenInfo))
+    debug(`Pulled ${amount} from ${token}`)
   }
 
   async get (token) {
     let tokenInfo = JSON.parse(await this.db.get(token))
     tokenInfo = this.token.get(tokenInfo)
     this.db.put(token, JSON.stringify(tokenInfo))
+    debug(`Queried token ${token}`)
     return tokenInfo
   }
 
@@ -44,6 +47,7 @@ class TokenModel {
   }
 
   async delete (token) {
+    debug(`Deleting token ${token}`)
     this.expiryCache.delete(token)
     await this.db.del(token)
   }
@@ -73,6 +77,7 @@ class TokenModel {
       assetScale,
       webhook
     }))
+    debug(`Created token ${token}`)
 
     return {
       token,
@@ -85,6 +90,7 @@ class TokenModel {
     tokenInfo = await this.token.update(tokenInfo, values)
     this.expiryCache.set(token, { id: token, expiry: tokenInfo.expiry })
     this.db.put(token, JSON.stringify(tokenInfo))
+    debug(`Updated token ${token}`)
     return tokenInfo
   }
 }

@@ -5,6 +5,7 @@ const Config = require('./config')
 const TokenModel = require('../models/token')
 const Exchange = require('./exchange')
 const Webhooks = require('./webhooks')
+const debug = require('debug')('ilp-spsp-pull:server')
 
 class Server {
   constructor (deps) {
@@ -34,7 +35,7 @@ class Server {
     })
 
     this.server.on('connection', async (connection) => {
-      console.log('server got connection')
+      debug('server got connection')
 
       const tag = connection.connectionTag
 
@@ -43,7 +44,7 @@ class Server {
         connection.on('stream', (stream) => {
           stream.setReceiveMax(Infinity)
           stream.on('money', amount => {
-            console.log('Received ' + amount + ' units from ' + connection._sourceAccount)
+            debug('Received ' + amount + ' units from ' + connection._sourceAccount)
           })
         })
       } else {
@@ -58,7 +59,7 @@ class Server {
             stream.setSendMax(pullable)
 
             await stream.on('outgoing_money', pulled => {
-              console.log('Streamed ' + pulled + ' units to ' + connection._sourceAccount)
+              debug('Streamed ' + pulled + ' units to ' + connection._sourceAccount)
               const amount = Math.ceil(pulled / exchangeRate)
               this.tokens.pull({ token, amount })
               this.webhooks.call({ token })

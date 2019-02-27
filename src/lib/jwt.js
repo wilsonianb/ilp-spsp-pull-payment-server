@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 
 const Config = require('./config')
+const debug = require('debug')('ilp-spsp-pull:jwt')
 
 class JWT {
   constructor (deps) {
@@ -8,12 +9,14 @@ class JWT {
   }
 
   create ({ payload, options }) {
+    debug('Creating token')
     options = addAlgorithm(options)
 
     return jwt.sign(payload, this.config.jwtSecret, options)
   }
 
   verify ({ token, options }) {
+    debug('Verifying token')
     options = addAlgorithm(options)
     try {
       return jwt.verify(token, this.config.jwtSecret, options)
@@ -23,6 +26,7 @@ class JWT {
   }
 
   decode (token) {
+    debug('Decoding token')
     return jwt.decode(token, { complete: true })
   }
 }
