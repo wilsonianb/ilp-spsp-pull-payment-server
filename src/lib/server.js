@@ -58,7 +58,7 @@ class Server {
             const pullable = Math.floor(tokenInfo.balanceAvailable * exchangeRate)
             stream.setSendMax(pullable)
 
-            await stream.on('outgoing_money', pulled => {
+            stream.on('outgoing_money', pulled => {
               debug('Streamed ' + pulled + ' units to ' + connection._sourceAccount)
               const amount = Math.ceil(pulled / exchangeRate)
               this.tokens.pull({ token, amount })
@@ -67,8 +67,6 @@ class Server {
                 })
             })
           }
-          await stream.end()
-          await connection.end()
         })
       }
     })
