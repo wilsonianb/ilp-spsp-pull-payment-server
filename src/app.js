@@ -6,6 +6,7 @@ const Config = require('./lib/config')
 const Localtunnel = require('./lib/localtunnel')
 const TokenController = require('./controllers/token')
 const PaymentPointerController = require('./controllers/payment-pointer')
+const ExchangeController = require('./controllers/exchange')
 
 class App {
   constructor (deps) {
@@ -16,6 +17,7 @@ class App {
 
     this.paymentPointer = deps(PaymentPointerController)
     this.tokens = deps(TokenController)
+    this.exchange = deps(ExchangeController)
   }
 
   async listen () {
@@ -27,6 +29,7 @@ class App {
       await this.localtunnel.listen()
     }
 
+    await this.exchange.init(router)
     await this.paymentPointer.init(router)
     await this.tokens.init(router)
 
