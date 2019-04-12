@@ -14,6 +14,7 @@ class Server {
     this.exchange = deps(Exchange)
     this.webhooks = deps(Webhooks)
     this.plugin = this.config.plugin
+    this.streams = new Map()
     this.server = null
   }
 
@@ -54,7 +55,8 @@ class Server {
 
         connection.on('stream', async (stream) => {
           const exchangeRate = await this.exchange.fetchRate(tokenInfo.assetCode, tokenInfo.assetScale, this.server.serverAssetCode, this.server.serverAssetScale)
-          if (exchangeRate) {
+          if (exchangeRate && !this.streams.has(token)) {
+            this.streams.set(token, stream.id)
             const pullable = Math.floor(tokenInfo.balanceAvailable * exchangeRate)
             stream.setSendMax(pullable)
 
@@ -65,6 +67,10 @@ class Server {
               this.webhooks.call({ token })
                 .catch(e => {
                 })
+            })
+
+            stream.on('end', () => {
+              this.streams.delete(token)
             })
           }
         })
